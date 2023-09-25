@@ -34,10 +34,6 @@ Download a ZIP archive and extract it.
 
 MIT License. See `LICENSE` file for details.
 
-## License
-
-MIT License
-
 ## Author
 
 rubyu [![Github icon](http://i.imgur.com/9I6NRUm.png)](https://github.com/rubyu) [![Twitter icon](http://i.imgur.com/wWzX9uB.png)](https://twitter.com/ruby_u)
