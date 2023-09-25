@@ -12,7 +12,7 @@ Clipboard History Merger is a utility for managing a history of clipboard conten
 ## Requirements
 
 - Windows operating system.
-- .NET Framework 4.5 or later.
+- .NET Framework 4.6.1 or later.
 
 ## Installation
 
