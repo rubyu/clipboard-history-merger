@@ -1,6 +1,6 @@
-# Clipboard History Manager
+# Clipboard History Merger
 
-Clipboard History Manager is a utility for managing a history of clipboard contents, and pasting a concatenation of recent clipboard entries using a keyboard shortcut.
+Clipboard History Merger is a utility for managing a history of clipboard contents, and pasting a concatenation of recent clipboard entries using a keyboard shortcut.
 
 ## Features
 
@@ -17,16 +17,16 @@ Clipboard History Manager is a utility for managing a history of clipboard conte
 ## Installation
 
 ### Build
-1. Clone the repository: `git clone https://github.com/your-username/ClipboardHistoryManager.git`.
-2. Open `ClipboardHistoryManager.sln` in Visual Studio.
-3. Build the solution to produce the `ClipboardHistoryManager.exe` executable.
+1. Clone the repository: `git clone https://github.com/rubyu/clipboard-history-merger.git`.
+2. Open `ClipboardHistoryMerger.sln` in Visual Studio.
+3. Build the solution to produce the `ClipboardHistoryMerger.exe` executable.
 
 ### Download
 Download a ZIP archive and extract it.
 
 ## Usage
 
-1. Run `ClipboardHistoryManager.exe`.
+1. Run `ClipboardHistoryMerger.exe`.
 2. Copy text to clipboard as usual.
 3. Press `Ctrl + Alt + V` one or more times to paste concatenated clipboard history into the foreground application.
 
