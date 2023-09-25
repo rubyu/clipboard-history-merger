@@ -1,17 +1,24 @@
 # Clipboard History Merger
 
-Clipboard History Merger is a utility for managing a history of clipboard contents, and pasting a concatenation of recent clipboard entries using a keyboard shortcut.
+Clipboard History Merger is a utility for recording the history of clipboard contents, and pasting **a concatenation** of recent clipboard entries using a keyboard shortcut.
 
 ## Features
 
-- Monitors clipboard and maintains a history of the last 10 entries.
-- Utilizes a FIFO (First In, First Out) mechanism for managing clipboard history.
-- Monitors keyboard shortcut `Ctrl + Alt + V`. Upon a sequence of consecutive presses within a 1-second interval, concatenates corresponding number of recent clipboard entries and pastes the concatenated string into the foreground application.
-- Utilizes Win32 `SendInput` function to send text to the foreground application.
+- Monitors the clipboard and maintains a history of the last 10 entries.
+- Monitors the keyboard shortcut `Ctrl + Alt + V`. Upon a sequence of consecutive presses within a 1-second interval, it concatenates the corresponding number of recent clipboard entries and pastes the resulting string into the foreground application.
+
+## Examples of actual use cases
+
+| Clipboard history (older - newer) | Activated shortcuts | What will be sent |
+| ------------- | ------------- | ------------- |
+| [The, quick, brown, fox, jumped, over, the, lazy, dogs.] | [Ctrl+Alt+V] | dogs. |
+| [The, quick, brown, fox, jumped, over, the, lazy, dogs.] | [Ctrl+Alt+V] x2 | lazy dogs. |
+| [The, quick, brown, fox, jumped, over, the, lazy, dogs.] | [Ctrl+Alt+V] x3 | the lazy dogs. |
+| [The, quick, brown, fox, jumped, over, the, lazy, dogs.] | [Ctrl+Alt+V] x4 | over the lazy dogs. |
 
 ## Requirements
 
-- Windows operating system.
+- Windows 7 or later.
 - .NET Framework 4.6.1 or later.
 
 ## Installation
@@ -27,7 +34,7 @@ Download a ZIP archive and extract it.
 ## Usage
 
 1. Run `ClipboardHistoryMerger.exe`.
-2. Copy text to clipboard as usual.
+2. Copy text to the clipboard as usual.
 3. Press `Ctrl + Alt + V` one or more times to paste concatenated clipboard history into the foreground application.
 
 ## License
