@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 namespace Crevice.WinAPI.SendInput
 {
     using Crevice.WinAPI.Helper;
-    using Crevice.WinAPI.Device;
 
     public class InputSender
     {
@@ -192,14 +191,6 @@ namespace Crevice.WinAPI.SendInput
             return BitConverter.ToString(BitConverter.GetBytes(data));
         }
 
-        protected INPUT ToInput(MOUSEINPUT mouseInput)
-        {
-            var input = new INPUT();
-            input.type = (int)InputType.INPUT_MOUSE;
-            input.data.asMouseInput = mouseInput;
-            return input;
-        }
-
         protected INPUT ToInput(KEYBDINPUT keyboardInput)
         {
             var input = new INPUT();
@@ -207,163 +198,6 @@ namespace Crevice.WinAPI.SendInput
             input.data.asKeyboardInput = keyboardInput;
             return input;
         }
-
-        private MOUSEINPUT GetCreviceMouseInput()
-        {
-            var mouseInput = new MOUSEINPUT();
-            // Set the CreviceApp signature to the mouse event
-            mouseInput.dwExtraInfo = MOUSEEVENTF_CREVICE_APP;
-            mouseInput.time = 0;
-            return mouseInput;
-        }
-        
-        protected MOUSEINPUT MouseLeftDownEvent()
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_LEFTDOWN;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseLeftUpEvent()
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_LEFTUP;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseRightDownEvent()
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_RIGHTDOWN;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseRightUpEvent()
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_RIGHTUP;
-            return mouseInput;
-        }
-
-        // We must consider DPI scaling factor to correctly treat logical and physical mouse cursor positions
-        // due to this application is DPI aware.
-        //
-        // The following uses or returns physical value:
-        //     WinAPI.Window.Window.GetPhysicalCursorPos()
-        //     WinAPI.Device.GetPhysicalScreenSize()
-        //     InputSender.MouseMoveEvent()
-        //     InputSender.MouseMoveToEvent()
-        //
-        // The following uses or returns logical value:
-        //     WinAPI.Window.Window.GetLogicalCursorPos()
-        //     WinAPI.Device.GetLogicalScreenSize()
-        //     InputSender.MouseLogicalMoveEvent()
-        //     InputSender.MouseLogicalMoveToEvent()
-        //     Mouse events which to be given in the procedure which passed to SetWindowsHookEx(WH_MOUSE_LL).
-        //
-        // Depend on the environment (physical if >= Windows 8.1, maybe...):
-        //     WinAPI.Window.Window.GetCursorPos()
-
-        protected MOUSEINPUT MouseMoveEvent(int dx, int dy)
-        {
-            var point = Window.Window.GetPhysicalCursorPos();
-            var x = point.X + dx;
-            var y = point.Y + dy;
-            return MouseMoveToEvent(x, y);
-        }
-
-        protected MOUSEINPUT MouseMoveToEvent(int x, int y)
-        {
-            var mouseInput = GetCreviceMouseInput();
-            var screenSize = Device.GetPhysicalScreenSize();
-            mouseInput.dx = (x + 1) * 0xFFFF / screenSize.X;
-            mouseInput.dy = (y + 1) * 0xFFFF / screenSize.Y;
-            mouseInput.dwFlags = (int)(MouseEventType.MOUSEEVENTF_MOVE | MouseEventType.MOUSEEVENTF_ABSOLUTE);
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseLogicalMoveEvent(int dx, int dy)
-        {
-            var point = Window.Window.GetPhysicalCursorPos();
-            var scalingFactor = Device.GetScreenScalingFactor();
-            return MouseMoveToEvent((int)(point.X + dx * scalingFactor), (int)(point.Y + dy * scalingFactor));
-        }
-
-        protected MOUSEINPUT MouseLogicalMoveToEvent(int x, int y)
-        {
-            var scalingFactor = Device.GetScreenScalingFactor();
-            return MouseMoveToEvent((int)(x * scalingFactor), (int)(y * scalingFactor));
-        }
-
-        protected MOUSEINPUT MouseMiddleDownEvent()
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_MIDDLEDOWN;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseMiddleUpEvent()
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_MIDDLEUP;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseVerticalWheelEvent(int delta)
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_WHEEL;
-            mouseInput.mouseData.asWheelDelta.delta = delta;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseWheelDownEvent()
-            => MouseVerticalWheelEvent(-120);
-
-        protected MOUSEINPUT MouseWheelUpEvent()
-            => MouseVerticalWheelEvent(120);
-        
-        protected MOUSEINPUT MouseHorizontalWheelEvent(int delta)
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_HWHEEL;
-            mouseInput.mouseData.asWheelDelta.delta = delta;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseWheelRightEvent()
-            => MouseHorizontalWheelEvent(120);
-
-        protected MOUSEINPUT MouseWheelLeftEvent()
-            => MouseHorizontalWheelEvent(-120);
-        
-        private MOUSEINPUT MouseXUpEvent(int type)
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_XUP;
-            mouseInput.mouseData.asXButton.type = type;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseX1UpEvent()
-            => MouseXUpEvent((int)XButtonType.XBUTTON1);
-
-        protected MOUSEINPUT MouseX2UpEvent()
-            => MouseXUpEvent((int)XButtonType.XBUTTON2);
-
-        private MOUSEINPUT MouseXDownEvent(int type)
-        {
-            var mouseInput = GetCreviceMouseInput();
-            mouseInput.dwFlags = (int)MouseEventType.MOUSEEVENTF_XDOWN;
-            mouseInput.mouseData.asXButton.type = type;
-            return mouseInput;
-        }
-
-        protected MOUSEINPUT MouseX1DownEvent()
-            => MouseXDownEvent((int)XButtonType.XBUTTON1);
-
-        protected MOUSEINPUT MouseX2DownEvent()
-            => MouseXDownEvent((int)XButtonType.XBUTTON2);
 
         private KEYBDINPUT GetCreviceKeyboardInput()
         {
@@ -467,16 +301,6 @@ namespace Crevice.WinAPI.SendInput
 
     public class SingleInputSender : InputSender
     {
-        protected void Send(params MOUSEINPUT[] mouseInput)
-        {
-            var input = new INPUT[mouseInput.Length];
-            for (var i = 0; i < mouseInput.Length; i++)
-            {
-                input[i] = ToInput(mouseInput[i]);
-            }
-            Send(input);
-        }
-
         protected void Send(params KEYBDINPUT[] keyboardInput)
         {
             var input = new INPUT[keyboardInput.Length];
@@ -486,99 +310,6 @@ namespace Crevice.WinAPI.SendInput
             }
             Send(input);
         }
-
-        public void LeftDown()
-            => Send(MouseLeftDownEvent());
-        
-        public void LeftUp()
-            => Send(MouseLeftUpEvent());
-
-        public void LeftClick()
-            => Send(MouseLeftDownEvent(), MouseLeftUpEvent());
-
-        public void RightDown()
-            => Send(MouseRightDownEvent());
-
-        public void RightUp()
-            => Send(MouseRightUpEvent());
-
-        public void RightClick()
-            => Send(MouseRightDownEvent(), MouseRightUpEvent());
-
-        public void Move(int dx, int dy, bool logical = false)
-        {
-            if (logical)
-            {
-                Send(MouseLogicalMoveEvent(dx, dy));
-            }
-            else
-            {
-                Send(MouseMoveEvent(dx, dy));
-            }
-        }
-
-        public void MoveTo(int x, int y, bool logical = false)
-        {
-            if (logical)
-            {
-                Send(MouseLogicalMoveToEvent(x, y));
-            }
-            else
-            {
-                Send(MouseMoveToEvent(x, y));
-            }
-        }
-
-        public void LogicalMove(int dx, int dy)
-            => Send(MouseLogicalMoveEvent(dx, dy));
-    
-        public void LogicalMoveMoveTo(int x, int y)
-            => Send(MouseMoveToEvent(x, y));
-
-        public void MiddleDown()
-            => Send(MouseMiddleDownEvent());
-
-        public void MiddleUp()
-            => Send(MouseMiddleUpEvent());
-
-        public void MiddleClick()
-            => Send(MouseMiddleDownEvent(), MouseMiddleUpEvent());
-
-        public void VerticalWheel(int delta)
-            => Send(MouseVerticalWheelEvent(delta));
-        
-        public void WheelDown()
-            => Send(MouseWheelDownEvent());
-
-        public void WheelUp()
-            => Send(MouseWheelUpEvent());
-        
-        public void HorizontalWheel(int delta)
-            => Send(MouseHorizontalWheelEvent(delta));
-
-        public void WheelLeft()
-            => Send(MouseWheelLeftEvent());
-
-        public void WheelRight()
-            => Send(MouseWheelRightEvent());
-
-        public void X1Down()
-            => Send(MouseX1DownEvent());
-
-        public void X1Up()
-            => Send(MouseX1UpEvent());
-        
-        public void X1Click()
-            => Send(MouseX1DownEvent(), MouseX1UpEvent());
-
-        public void X2Down()
-            => Send(MouseX2DownEvent());
-
-        public void X2Up()
-            => Send(MouseX2UpEvent());
-        
-        public void X2Click()
-            => Send(MouseX2DownEvent(), MouseX2UpEvent());
 
         public void KeyDown(int keyCode)
             => Send(KeyDownEvent((ushort)keyCode));
@@ -641,98 +372,8 @@ namespace Crevice.WinAPI.SendInput
             return new InputSequenceBuilder(xs);
         }
 
-        private InputSequenceBuilder NewInstance(params MOUSEINPUT[] mouseEvent)
-            => NewInstance(mouseEvent.Select(x => ToInput(x)).ToList());
-
         private InputSequenceBuilder NewInstance(params KEYBDINPUT[] keyboardEvent)
             => NewInstance(keyboardEvent.Select(x => ToInput(x)).ToList());
-
-        public InputSequenceBuilder LeftDown()
-            => NewInstance(MouseLeftDownEvent());
-
-        public InputSequenceBuilder LeftUp()
-            => NewInstance(MouseLeftUpEvent());
-
-        public InputSequenceBuilder LeftClick()
-            => NewInstance(MouseLeftDownEvent(), MouseLeftUpEvent());
-    
-        public InputSequenceBuilder RightDown()
-            => NewInstance(MouseRightDownEvent());
-
-        public InputSequenceBuilder RightUp()
-            => NewInstance(MouseRightUpEvent());
-    
-        public InputSequenceBuilder RightClick()
-            => NewInstance(MouseRightDownEvent(), MouseRightUpEvent());
-
-        public InputSequenceBuilder Move(int dx, int dy, bool logical = false)
-        {
-            if (logical)
-            {
-                return NewInstance(MouseLogicalMoveEvent(dx, dy));
-            }
-            else
-            {
-                return NewInstance(MouseMoveEvent(dx, dy));
-            }
-        }
-
-        public InputSequenceBuilder MoveTo(int x, int y, bool logical = false)
-        {
-            if (logical)
-            {
-                return NewInstance(MouseLogicalMoveToEvent(x, y));
-            }
-            else
-            {
-                return NewInstance(MouseMoveToEvent(x, y));
-            }
-        }
-
-        public InputSequenceBuilder MiddleDown()
-            => NewInstance(MouseMiddleDownEvent());
-
-        public InputSequenceBuilder MiddleUp()
-            => NewInstance(MouseMiddleUpEvent());
-
-        public InputSequenceBuilder MiddleClick()
-            => NewInstance(MouseMiddleDownEvent(), MouseMiddleUpEvent());
-
-        public InputSequenceBuilder VerticalWheel(int delta)
-            => NewInstance(MouseVerticalWheelEvent(delta));
-
-        public InputSequenceBuilder WheelDown()
-            => NewInstance(MouseWheelDownEvent());
-
-        public InputSequenceBuilder WheelUp()
-            => NewInstance(MouseWheelUpEvent());
-
-        public InputSequenceBuilder HorizontalWheel(int delta)
-            => NewInstance(MouseHorizontalWheelEvent(delta));
-
-        public InputSequenceBuilder WheelLeft()
-            => NewInstance(MouseWheelLeftEvent());
-
-        public InputSequenceBuilder WheelRight()
-            => NewInstance(MouseWheelRightEvent());
-    
-        public InputSequenceBuilder X1Down()
-            => NewInstance(MouseX1DownEvent());
-
-        public InputSequenceBuilder X1Up()
-            => NewInstance(MouseX1UpEvent());
-
-        public InputSequenceBuilder X1Click()
-            => NewInstance(MouseX1DownEvent(), MouseX1UpEvent());
-
-        public InputSequenceBuilder X2Down()
-            => NewInstance(MouseX2UpEvent());
-
-        public InputSequenceBuilder X2Up()
-            => NewInstance(MouseX2UpEvent());
-
-        public InputSequenceBuilder X2Click()
-            => NewInstance(MouseX2DownEvent(), MouseX2UpEvent());
 
         public InputSequenceBuilder KeyDown(int keyCode)
             => NewInstance(KeyDownEvent((ushort)keyCode));

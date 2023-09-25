@@ -1,24 +1,38 @@
-| master | develop |
-|--------|---------|
-| [![Build status](https://ci.appveyor.com/api/projects/status/uuthd05870dkkj3w/branch/master?svg=true)](https://ci.appveyor.com/project/rubyu/creviceapp/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/uuthd05870dkkj3w/branch/develop?svg=true)](https://ci.appveyor.com/project/rubyu/creviceapp/branch/develop) |
+# Clipboard History Manager
 
+Clipboard History Manager is a utility for managing a history of clipboard contents, and pasting a concatenation of recent clipboard entries using a keyboard shortcut.
 
-**Crevice4** is multi purpose utility which supports gestures with **mouse** and **keyboard**.
+## Features
 
-You can use **C# language** in your customizable userscript file, so there is **nothing that can not be done for you**.
+- Monitors clipboard and maintains a history of the last 10 entries.
+- Utilizes a FIFO (First In, First Out) mechanism for managing clipboard history.
+- Monitors keyboard shortcut `Ctrl + Alt + V`. Upon a sequence of consecutive presses within a 1-second interval, concatenates corresponding number of recent clipboard entries and pastes the concatenated string into the foreground application.
+- Utilizes Win32 `SendInput` function to send text to the foreground application.
 
-Gestures for standard browsers are built in, by default.
-</p>
+## Requirements
 
-## Install
+- Windows operating system.
+- .NET Framework 4.5 or later.
 
-[Get Crevice 4 on Windows Store](https://www.microsoft.com/p/crevice-4/9nzxvrj73xj0) <sup>new!</sup>
+## Installation
 
-[Zip Archive](https://github.com/creviceapp/creviceapp/releases)
+### Build
+1. Clone the repository: `git clone https://github.com/your-username/ClipboardHistoryManager.git`.
+2. Open `ClipboardHistoryManager.sln` in Visual Studio.
+3. Build the solution to produce the `ClipboardHistoryManager.exe` executable.
 
-## Documentation
+### Download
+Download a ZIP archive and extract it.
 
-[https://creviceapp.github.io](https://creviceapp.github.io)
+## Usage
+
+1. Run `ClipboardHistoryManager.exe`.
+2. Copy text to clipboard as usual.
+3. Press `Ctrl + Alt + V` one or more times to paste concatenated clipboard history into the foreground application.
+
+## License
+
+MIT License. See `LICENSE` file for details.
 
 ## License
 

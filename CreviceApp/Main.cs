@@ -10,72 +10,100 @@ using System.Windows.Forms;
 namespace Crevice
 {
     using Crevice.Logging;
-    using Crevice.Config;
+    using Crevice.WinAPI.SendInput;
+    using Crevice.WinAPI.WindowsHookEx;
 
     static class Program
     {
-        /// <summary>
-        /// アプリケーションのメイン エントリ ポイントです。
-        /// </summary>
+        private static readonly List<string> clipboardHistory = new List<string>();
+        private static DateTime lastShortcutTime = DateTime.MinValue;
+        private static int consecutiveShortcutPresses = 0;
+        private static System.Timers.Timer sendTextTimer;
+        private static readonly SingleInputSender singleInputSender = new SingleInputSender();
+
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            var cliOption = CLIOption.ParseEnvironmentCommandLine();
-            if (!cliOption.ParseSuccess)
+            using (Verbose.PrintElapsed("Initializing the components"))
             {
-                WinAPI.Console.Console.AttachConsole();
-                Console.WriteLine(cliOption.HelpMessage);
-                WinAPI.Console.Console.FreeConsole();
-                return;
-            } 
+                KeyboardHookManager.Initialize();
+                ClipboardNotification.Initialize();
 
-            if (cliOption.Version)
-            {
-                WinAPI.Console.Console.AttachConsole();
-                Console.WriteLine(cliOption.VersionMessage);
-                WinAPI.Console.Console.FreeConsole();
-                return;
+                ClipboardNotification.ClipboardUpdate += ClipboardUpdated;
+                KeyboardHookManager.ShortcutActivate += OnShortcutActivated;
+
+                sendTextTimer = new System.Timers.Timer(1000);
+                sendTextTimer.Elapsed += OnTimerElapsed;
+                sendTextTimer.AutoReset = false;
             }
 
-            if (cliOption.Verbose)
+            using (Verbose.PrintElapsed("Starting the application"))
             {
-                WinAPI.Console.Console.AttachConsole();
-                Verbose.Enable();
+                Application.Run(new ApplicationContext());
             }
 
-            Verbose.Print($"CLIOption.NoGUI: {cliOption.NoGUI}");
-            Verbose.Print($"CLIOption.NoCache: {cliOption.NoCache}");
-            Verbose.Print($"CLIOption.Verbose: {cliOption.Verbose}");
-            Verbose.Print($"CLIOption.Version: {cliOption.Version}");
-            Verbose.Print($"CLIOption.ProcessPriority: {cliOption.ProcessPriority}");
-            Verbose.Print($"CLIOption.ScriptFile: {cliOption.ScriptFile}");
+            using (Verbose.PrintElapsed("Shutting down the components"))
+            {
+                KeyboardHookManager.Uninitialize();
+                ClipboardNotification.Uninitialize();
+            }
+        }
 
-            Verbose.Print($"Setting ProcessPriority to {cliOption.ProcessPriority}");
-            SetProcessPriority(cliOption.ProcessPriority);
+        private static void ClipboardUpdated(object sender, EventArgs e)
+        {
+            string clipboardText = Clipboard.GetText();
+            Verbose.Print($"Clipboard update detected: '{clipboardText}'");
 
-            var config = new GlobalConfig(cliOption);
-            PrepareUserScript(config);
+            if (!string.IsNullOrEmpty(clipboardText))
+            {
+                clipboardHistory.Insert(0, clipboardText);
+                Verbose.Print($"The item has been added to the list");
+                if (clipboardHistory.Count > 10)
+                {
+                    clipboardHistory.RemoveAt(clipboardHistory.Count - 1);
+                    Verbose.Print($"The first entry has been removed; reached to the limit");
+                }
+            }
+        }
+
+        private static void OnShortcutActivated(object sender, EventArgs e)
+        {
+            Verbose.Print($"Ctrl+Shift+V has been pressed");
             
-            var launcherForm = new UI.LauncherForm(config);
-            var mainForm = new UI.ReloadableMainForm(launcherForm);
-            launcherForm.MainForm = mainForm;
-            Application.Run(launcherForm);
-        }
-
-        private static void PrepareUserScript(GlobalConfig config)
-        {
-            if (!System.IO.File.Exists(config.UserScriptFile))
+            DateTime now = DateTime.Now;
+            if ((now - lastShortcutTime).TotalMilliseconds <= 1000)
             {
-                config.WriteUserScriptFile(Encoding.UTF8.GetString(Properties.Resources.DefaultUserScript));
+                consecutiveShortcutPresses++;
             }
+            else
+            {
+                consecutiveShortcutPresses = 1;
+            }
+            Verbose.Print($"{consecutiveShortcutPresses} times");
+
+            lastShortcutTime = now;
+            sendTextTimer.Stop();
+            sendTextTimer.Start();
         }
 
-        private static void SetProcessPriority(ProcessPriorityClass priority)
+        private static void OnTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Process.GetCurrentProcess().PriorityClass = priority;
+            var xs = clipboardHistory.GetRange(0, Math.Min(consecutiveShortcutPresses, clipboardHistory.Count));
+            xs.Reverse();
+            string textToSend = string.Join(" ", xs);
+
+            using (Verbose.PrintElapsed($"Sending the merged text the foreground application; '{textToSend}'"))
+            {
+
+                if (string.IsNullOrEmpty(textToSend))
+                {
+                    Verbose.Print("Skipped for the text was empty");
+                    return;
+                }
+                singleInputSender.UnicodeKeyStroke(textToSend);
+            }
+                
+            consecutiveShortcutPresses = 0;
         }
     }
 }

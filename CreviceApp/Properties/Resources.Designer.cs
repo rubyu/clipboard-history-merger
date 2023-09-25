@@ -19,7 +19,7 @@ namespace Crevice.Properties {
     // または Visual Studio のようなツールを使用して自動生成されました。
     // メンバーを追加または削除するには、.ResX ファイルを編集して、/str オプションと共に
     // ResGen を実行し直すか、または VS プロジェクトをビルドし直します。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -47,7 +47,7 @@ namespace Crevice.Properties {
         }
         
         /// <summary>
-        ///   厳密に型指定されたこのリソース クラスを使用して、すべての検索リソースに対し、
+        ///   すべてについて、現在のスレッドの CurrentUICulture プロパティをオーバーライドします
         ///   現在のスレッドの CurrentUICulture プロパティをオーバーライドします。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -57,72 +57,6 @@ namespace Crevice.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   (アイコン) に類似した型 System.Drawing.Icon のローカライズされたリソースを検索します。
-        /// </summary>
-        internal static System.Drawing.Icon CreviceIcon {
-            get {
-                object obj = ResourceManager.GetObject("CreviceIcon", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   型 System.Byte[] のローカライズされたリソースを検索します。
-        /// </summary>
-        internal static byte[] DefaultUserScript {
-            get {
-                object obj = ResourceManager.GetObject("DefaultUserScript", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   &lt;html&gt;
-        ///&lt;head&gt;
-        ///&lt;style type=&quot;text/css&quot;&gt;
-        ///html 
-        ///{{
-        /// 	line-height: 1.8; 
-        ///}}
-        ///.appname 
-        ///{{
-        /// 	font-size: 100%; 
-        /// 	font-weight: bold; 
-        ///}}
-        ///.version 
-        ///{{
-        /// 	font-size: 100%; 
-        ///}}
-        ///.license 
-        ///{{
-        /// 	font-size: 80%; 
-        ///}}  
-        ///.link 
-        ///{{
-        /// 	font-size: 80%; 
-        ///}}  
-        ///.usage
-        ///{{
-        /// 	font-size: 60%; 
-        ///}}
-        ///.center 
-        ///{{
-        /// 	text-align: center; 
-        ///}}
-        ///&lt;/style&gt;
-        ///&lt;/head&gt;
-        ///&lt;body&gt;
-        ///    &lt;div class=&quot;center&quot;&gt;&lt;span class=&quot;appname&quot;&gt;{0}&lt;/span&gt; &lt;span class=&quot;version&quot;&gt;{1}&lt;/span&gt;&lt;/div&gt;
-        ///    &lt;div class=&quot;center license&quot;&gt;{2}&lt;/div&gt;
-        ///    &lt;di [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        internal static string ProductInfo {
-            get {
-                return ResourceManager.GetString("ProductInfo", resourceCulture);
             }
         }
     }
