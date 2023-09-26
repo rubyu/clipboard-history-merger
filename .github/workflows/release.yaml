@@ -17,7 +17,7 @@ jobs:
     - name: Set tag name to vars
       id: vars
       run: |
-        echo "artifact=ClipboardHistoryMerger.zip" >> ${env:GITHUB_OUTPUT}
+        echo "artifact=ClipboardHistoryMerger-${env:GITHUB_REF_NAME}.zip" >> ${env:GITHUB_OUTPUT}
         
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
