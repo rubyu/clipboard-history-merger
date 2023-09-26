@@ -17,8 +17,7 @@ jobs:
     - name: Set tag name to vars
       id: vars
       run: |
-        echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-        echo "artifact=ClipboardHistoryMerger-${GITHUB_REF#refs/*/}.zip" >> $GITHUB_OUTPUT
+        echo "artifact=ClipboardHistoryMerger.zip" >> $GITHUB_OUTPUT
         
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
