@@ -15,11 +15,11 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Set tag name to vars
-      run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-      
-    - name: Set artifact name to vars
-      run: echo "artifact=ClipboardHistoryMerger-${GITHUB_REF#refs/*/}.zip" >> $GITHUB_OUTPUT
-
+      id: vars
+      run: |
+        echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+        echo "artifact=ClipboardHistoryMerger-${GITHUB_REF#refs/*/}.zip" >> $GITHUB_OUTPUT
+        
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
 
