@@ -16,6 +16,9 @@ jobs:
       
     - name: Set tag name to vars
       run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+      
+    - name: Set artifact name to vars
+      run: echo "artifact=ClipboardHistoryMerger-${GITHUB_REF#refs/*/}.zip" >> $GITHUB_OUTPUT
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
@@ -28,18 +31,20 @@ jobs:
 
     - name: Build project
       run: msbuild /p:Configuration=Release
+      
+    - name: Compress artifact
+      run: Compress-Archive -Path ./src/bin/Release/* -Destination ${{ artifact }}
 
     - uses: actions/upload-artifact@v2
       with:
         name: ClipboardHistoryMerger-${{  steps.vars.outputs.tag }}
-        path: ./clipboard-history-merger/src/bin/Release/*
+        path: ./${{ artifact }}
 
     - name: Create release
       uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: ./clipboard-history-merger/src/bin/Release/*
-        asset_name: ClipboardHistoryMerger-${{  steps.vars.outputs.tag }}.zip
-        asset_content_type: application/zip
+        files: ./${{ artifact }}
+        
