@@ -1,0 +1,46 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Set tag
+      uses: actions/checkout@v2
+      id: vars
+      run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+
+    - name: Restore the application
+      run: msbuild /t:Restore /p:Configuration=Release
+
+    - name: Build project
+      run: msbuild /p:Configuration=Release
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ClipboardHistoryMerger-${{  steps.vars.outputs.tag }}
+        path: ${{ matrix.runs-on }}
+
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: .\clipboard-history-merger\src\bin\Release
+        asset_name: ClipboardHistoryMerger-${{  steps.vars.outputs.tag }}.zip
+        asset_content_type: application/zip
