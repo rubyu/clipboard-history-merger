@@ -25,9 +25,8 @@ namespace Crevice
         static void Main()
         {
 #if DEBUG  
-            Verbose.Print("Verbose output is enabled");
-#else
-            Verbose.Enabled = false;
+            Verbose.Enable();
+            Verbose.Print("Verbose output: enabled");
 #endif
             using (Verbose.PrintElapsed("Initializing the components"))
             {
