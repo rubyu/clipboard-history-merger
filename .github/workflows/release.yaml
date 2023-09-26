@@ -10,9 +10,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Set tag
+    - name: Checkout code
       uses: actions/checkout@v2
-      id: vars
+      
+    - name: Set tag name to vars
       run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
     - name: Checkout code
