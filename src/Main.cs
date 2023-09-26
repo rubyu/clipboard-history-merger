@@ -24,6 +24,11 @@ namespace Crevice
         [STAThread]
         static void Main()
         {
+#if DEBUG  
+            Verbose.Print("Verbose output is enabled");
+#else
+            Verbose.Enabled = false;
+#endif
             using (Verbose.PrintElapsed("Initializing the components"))
             {
                 KeyboardHookManager.Initialize();

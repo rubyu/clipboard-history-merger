@@ -150,7 +150,6 @@
     <Compile Include="Main.cs" />
     <Compile Include="Logging.Verbose.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WinAPI.Console.cs" />
     <Compile Include="WinAPI.Constants.VirtualKeys.cs" />
     <Compile Include="WinAPI.Constants.WindowsMessages.cs" />
     <Compile Include="WinAPI.Helper.cs" />
@@ -167,7 +166,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="ClipboardHistoryMerger_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
