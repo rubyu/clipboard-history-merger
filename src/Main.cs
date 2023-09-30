@@ -4,17 +4,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Crevice
 {
     using Crevice.Logging;
     using Crevice.WinAPI.SendInput;
-    using Crevice.WinAPI.WindowsHookEx;
 
     static class Program
     {
+        private static readonly Mutex mutex = new Mutex(true, "{21f3fdc8-5f2f-11ee-8c99-0242ac120002}");
+
         private static readonly List<string> clipboardHistory = new List<string>();
         private static DateTime lastShortcutTime = DateTime.MinValue;
         private static int consecutiveShortcutPresses = 0;
@@ -28,28 +28,41 @@ namespace Crevice
             Verbose.Enable();
             Verbose.Print("Verbose output: enabled");
 #endif
-            using (Verbose.PrintElapsed("Initializing the components"))
+            if (!mutex.WaitOne(TimeSpan.Zero, true))
             {
-                KeyboardHookManager.Initialize();
-                ClipboardNotification.Initialize();
-
-                ClipboardNotification.ClipboardUpdate += ClipboardUpdated;
-                KeyboardHookManager.ShortcutActivate += OnShortcutActivated;
-
-                sendTextTimer = new System.Timers.Timer(1000);
-                sendTextTimer.Elapsed += OnTimerElapsed;
-                sendTextTimer.AutoReset = false;
+                Verbose.Print("Exiting for another instance is already running");
+                Application.Exit();
             }
 
-            using (Verbose.PrintElapsed("Starting the application"))
+            try
             {
-                Application.Run(new ApplicationContext());
-            }
+                using (Verbose.PrintElapsed("Initializing the components"))
+                {
+                    KeyboardHookManager.Initialize();
+                    ClipboardNotification.Initialize();
 
-            using (Verbose.PrintElapsed("Shutting down the components"))
+                    ClipboardNotification.ClipboardUpdate += ClipboardUpdated;
+                    KeyboardHookManager.ShortcutActivate += OnShortcutActivated;
+
+                    sendTextTimer = new System.Timers.Timer(1000);
+                    sendTextTimer.Elapsed += OnTimerElapsed;
+                    sendTextTimer.AutoReset = false;
+                }
+
+                using (Verbose.PrintElapsed("Starting the application"))
+                {
+                    Application.Run(new ApplicationContext());
+                }
+
+                using (Verbose.PrintElapsed("Shutting down the components"))
+                {
+                    KeyboardHookManager.Uninitialize();
+                    ClipboardNotification.Uninitialize();
+                }
+            }
+            finally
             {
-                KeyboardHookManager.Uninitialize();
-                ClipboardNotification.Uninitialize();
+                mutex.ReleaseMutex();
             }
         }
 
