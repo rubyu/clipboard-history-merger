@@ -50,7 +50,7 @@ namespace Crevice.Logging
             ~ElapsedTimePrinter() => Dispose(false);
         }
 
-        public static bool Enabled { get; private set; }
+        public static bool Enabled { get; private set; } = false;
 
         public static void Enable()
         {

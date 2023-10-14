@@ -66,14 +66,14 @@ namespace Crevice
             }
         }
 
-        private static void ClipboardUpdated(object sender, EventArgs e)
+        private static void ClipboardUpdated(object sender, ClipboardUpdatedEventArgs e)
         {
-            string clipboardText = Clipboard.GetText();
-            Verbose.Print($"Clipboard update detected: '{clipboardText}'");
+            string text = e.ClipboardText;
+            Verbose.Print($"Clipboard update detected: '{text}'");
 
-            if (!string.IsNullOrEmpty(clipboardText))
+            if (!string.IsNullOrEmpty(text))
             {
-                clipboardHistory.Insert(0, clipboardText);
+                clipboardHistory.Insert(0, text);
                 Verbose.Print($"The item has been added to the list");
                 if (clipboardHistory.Count > 10)
                 {

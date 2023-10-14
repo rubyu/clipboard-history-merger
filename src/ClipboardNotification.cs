@@ -2,6 +2,17 @@
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
+public class ClipboardUpdatedEventArgs : EventArgs
+{
+    public string ClipboardText { get; }
+
+    public ClipboardUpdatedEventArgs(string clipboardText)
+    {
+        ClipboardText = clipboardText;
+    }
+}
+
+
 public static class ClipboardNotification
 {
     private class NotificationForm : Form
@@ -11,12 +22,29 @@ public static class ClipboardNotification
             NativeMethods.SetParent(Handle, NativeMethods.HWND_MESSAGE);
             NativeMethods.AddClipboardFormatListener(Handle);
         }
+        private static void OnClipboardUpdate(string clipboardText)
+        {
+            ClipboardUpdate?.Invoke(null, new ClipboardUpdatedEventArgs(clipboardText));
+        }
 
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == NativeMethods.WM_CLIPBOARDUPDATE)
             {
-                ClipboardUpdate?.Invoke(null, EventArgs.Empty);
+                string clipboardText = string.Empty;
+
+                if (InvokeRequired)
+                {
+                    Invoke(new Action(() => {
+                        clipboardText = Clipboard.GetText();
+                    }));
+                }
+                else
+                {
+                    clipboardText = Clipboard.GetText();
+                }
+
+                OnClipboardUpdate(clipboardText);
             }
             base.WndProc(ref m);
         }
@@ -38,7 +66,7 @@ public static class ClipboardNotification
 
     private static NotificationForm form;
 
-    public static event EventHandler ClipboardUpdate;
+    public static event EventHandler<ClipboardUpdatedEventArgs> ClipboardUpdate;
 
     public static void Initialize()
     {
