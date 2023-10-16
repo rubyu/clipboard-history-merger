@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 public class ClipboardUpdatedEventArgs : EventArgs
@@ -31,6 +32,7 @@ public static class ClipboardNotification
         {
             if (m.Msg == NativeMethods.WM_CLIPBOARDUPDATE)
             {
+                Thread.Sleep(500);
                 string clipboardText = string.Empty;
 
                 if (InvokeRequired)
@@ -65,16 +67,38 @@ public static class ClipboardNotification
     }
 
     private static NotificationForm form;
+    private static Thread formThread;
 
     public static event EventHandler<ClipboardUpdatedEventArgs> ClipboardUpdate;
 
     public static void Initialize()
     {
-        form = new NotificationForm();
+        formThread = new Thread(() =>
+        {
+            form = new NotificationForm();
+            Application.Run(form);
+        })
+        {
+            IsBackground = true,
+            Name = "ClipboardNotificationThread"
+        };
+        formThread.SetApartmentState(ApartmentState.STA); 
+        formThread.Start(); 
     }
 
     public static void Uninitialize()
     {
-        form.Dispose();
+        if (form != null && !form.IsDisposed)
+        {
+            if (form.InvokeRequired)
+            {
+                form.Invoke(new Action(form.Close));
+            }
+            else
+            {
+                form.Close();
+            }
+        }
+        formThread?.Join();
     }
 }

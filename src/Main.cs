@@ -10,6 +10,7 @@ namespace Crevice
 {
     using Crevice.Logging;
     using Crevice.WinAPI.SendInput;
+    using Crevice.WinAPI.Console;
 
     static class Program
     {
@@ -25,6 +26,7 @@ namespace Crevice
         static void Main()
         {
 #if DEBUG  
+            Console.AttachConsole();
             Verbose.Enable();
             Verbose.Print("Verbose output: enabled");
 #endif

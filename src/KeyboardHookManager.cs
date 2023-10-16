@@ -52,13 +52,13 @@ public static class KeyboardHookManager
             if (0 <= NativeMethods.GetKeyState(((int)Keys.ControlKey)) ||
                 0 <= NativeMethods.GetKeyState(((int)Keys.Menu)))
             {
-                Verbose.Print("Shift+Alt wasn't pressed");
+                // Verbose.Print("Shift+Alt wasn't pressed");
                 return WindowsHook.Result.Transfer;
             }
 
             if (data.vkCode != ((int)Keys.V))
             {
-                Verbose.Print("V wasn't pressed");
+                // Verbose.Print("V wasn't pressed");
                 return WindowsHook.Result.Transfer;
             }
 
