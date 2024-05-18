@@ -13,42 +13,65 @@ public class ClipboardUpdatedEventArgs : EventArgs
     }
 }
 
-
 public static class ClipboardNotification
 {
     private class NotificationForm : Form
     {
+        private static readonly int maxDebounceWaitMs = 100;
+        private static readonly int clipboardUpdateWaitMs = 1;
+        private static readonly int maxClipboardUpdateCheck = 1000;
+
+        private readonly System.Timers.Timer debounceTimer = new System.Timers.Timer(maxDebounceWaitMs) { AutoReset = false };
+        private uint lastClipboardSequenceNumber = 0;
+
         public NotificationForm()
         {
             NativeMethods.SetParent(Handle, NativeMethods.HWND_MESSAGE);
             NativeMethods.AddClipboardFormatListener(Handle);
-        }
-        private static void OnClipboardUpdate(string clipboardText)
-        {
-            ClipboardUpdate?.Invoke(null, new ClipboardUpdatedEventArgs(clipboardText));
+            debounceTimer.Elapsed += OnDebouncedClipboardUpdate;
         }
 
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == NativeMethods.WM_CLIPBOARDUPDATE)
             {
-                Thread.Sleep(500);
-                string clipboardText = string.Empty;
-
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => {
-                        clipboardText = Clipboard.GetText();
-                    }));
-                }
-                else
-                {
-                    clipboardText = Clipboard.GetText();
-                }
-
-                OnClipboardUpdate(clipboardText);
+                debounceTimer.Stop();
+                debounceTimer.Start();
             }
             base.WndProc(ref m);
+        }
+
+        private void OnDebouncedClipboardUpdate(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            uint initialSequenceNumber = lastClipboardSequenceNumber;
+            uint attempts = 0;
+            while (attempts < maxClipboardUpdateCheck) 
+            {
+                lastClipboardSequenceNumber = NativeMethods.GetClipboardSequenceNumber();
+                if (lastClipboardSequenceNumber != initialSequenceNumber)
+                {
+                    string clipboardText = string.Empty;
+                    if (InvokeRequired)
+                    {
+                        Invoke(new MethodInvoker(() => {
+                            clipboardText = Clipboard.GetText();
+                        }));
+                    }
+                    else
+                    {
+                        clipboardText = Clipboard.GetText();
+                    }
+                    OnClipboardUpdate(clipboardText);
+                    break;
+                }
+                Thread.Sleep(clipboardUpdateWaitMs);
+                attempts++;
+            }
+        }
+
+        private static void OnClipboardUpdate(string clipboardText)
+        {
+            ClipboardUpdate?.Invoke(null, new ClipboardUpdatedEventArgs(clipboardText));
         }
     }
 
@@ -62,6 +85,9 @@ public static class ClipboardNotification
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+        [DllImport("user32.dll")]
+        public static extern uint GetClipboardSequenceNumber();
 
         public const int WM_CLIPBOARDUPDATE = 0x031D;
     }
@@ -82,8 +108,8 @@ public static class ClipboardNotification
             IsBackground = true,
             Name = "ClipboardNotificationThread"
         };
-        formThread.SetApartmentState(ApartmentState.STA); 
-        formThread.Start(); 
+        formThread.SetApartmentState(ApartmentState.STA);
+        formThread.Start();
     }
 
     public static void Uninitialize()
